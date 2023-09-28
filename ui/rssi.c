@@ -22,7 +22,10 @@
 #include "settings.h"
 #include "ui/rssi.h"
 #include "ui/ui.h"
+#include "ui/helper.h"
+#include "external/printf/printf.h"
 
+/*
 static void Render(uint8_t RssiLevel, uint8_t VFO)
 {
 	uint8_t *pLine;
@@ -63,31 +66,33 @@ static void Render(uint8_t RssiLevel, uint8_t VFO)
 		if (RssiLevel >= 6) {
 			memcpy(pLine + 20, BITMAP_AntennaLevel6, sizeof(BITMAP_AntennaLevel6));
 		}
+		char s[8];
+		NUMBER_ToDigits(gCurrentRSSI,s);
+		UI_DisplaySmallDigits(4, s+4, 50, Line);
 		bIsClearMode = false;
 	}
 
 	ST7565_DrawLine(0, Line, 23 , pLine, bIsClearMode);
 }
+*/
 
 void UI_UpdateRSSI(uint16_t RSSI)
 {
-	uint8_t Level;
+	if (gEeprom.KEY_LOCK && gKeypadLocked > 0) return;
 
-	if (RSSI >= gEEPROM_RSSI_CALIB[gRxVfo->Band][3]) {
-		Level = 6;
-	} else if (RSSI >= gEEPROM_RSSI_CALIB[gRxVfo->Band][2]) {
-		Level = 4;
-	} else if (RSSI >= gEEPROM_RSSI_CALIB[gRxVfo->Band][1]) {
-		Level = 2;
-	} else if (RSSI >= gEEPROM_RSSI_CALIB[gRxVfo->Band][0]) {
-		Level = 1;
+	char s[8];
+	uint8_t Line;
+	const int16_t dBm = (RSSI / 2) - 160;
+
+	if (gEeprom.RX_CHANNEL == 0) {
+		Line = 3;
 	} else {
-		Level = 0;
+		Line = 7;
 	}
 
-	if (gVFO_RSSI_Level[gEeprom.RX_CHANNEL] != Level) {
-		gVFO_RSSI_Level[gEeprom.RX_CHANNEL] = Level;
-		Render(Level, gEeprom.RX_CHANNEL);
-	}
+	sprintf(s, "%-3d", dBm);
+	UI_PrintStringSmall(s, 2, 0, Line);
+
+	ST7565_BlitFullScreen();
+	
 }
-
