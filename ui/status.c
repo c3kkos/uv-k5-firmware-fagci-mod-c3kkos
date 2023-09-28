@@ -26,6 +26,8 @@
 #include "misc.h"
 #include "settings.h"
 #include "ui/status.h"
+#include "font.h"
+
 
 void UI_DisplayStatusDigits(uint8_t Size, const char *pString, uint8_t X)
 {
