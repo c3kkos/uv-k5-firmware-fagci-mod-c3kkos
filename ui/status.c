@@ -27,6 +27,15 @@
 #include "settings.h"
 #include "ui/status.h"
 
+void UI_DisplayStatusDigits(uint8_t Size, const char *pString, uint8_t X)
+{
+  uint8_t i;
+
+  for (i = 0; i < Size; i++) {
+    memcpy(gStatusLine + (i * 7) + X, gFontSmallDigits[(uint8_t)pString[i]], 7);
+  }
+}
+
 void UI_DisplayStatus(void)
 {
 	memset(gStatusLine, 0, sizeof(gStatusLine));
@@ -58,13 +67,13 @@ void UI_DisplayStatus(void)
 	}
 
 	if (gEeprom.VOX_SWITCH) {
-		memcpy(gStatusLine + 71, BITMAP_VOX, sizeof(BITMAP_VOX));
+		memcpy(gStatusLine + 55, BITMAP_VOX, sizeof(BITMAP_VOX));
 	}
 	if (gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF) {
 		memcpy(gStatusLine + 58, BITMAP_WX, sizeof(BITMAP_WX));
 	}
 	if (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF) {
-		memcpy(gStatusLine + 45, BITMAP_TDR, sizeof(BITMAP_TDR));
+		memcpy(gStatusLine + 40, BITMAP_TDR, sizeof(BITMAP_TDR));
 	}
 	if (gEeprom.VOICE_PROMPT != VOICE_PROMPT_OFF) {
 		memcpy(gStatusLine + 34, BITMAP_VoicePrompt, sizeof(BITMAP_VoicePrompt));
@@ -81,7 +90,21 @@ void UI_DisplayStatus(void)
 	if (gIsNoaaMode) {
 		memcpy(gStatusLine + 7, BITMAP_NOAA, sizeof(BITMAP_NOAA));
 	}
+
 #endif
+
+	// c3kkos Voltage reading - some symbols may overlap TO BE FIXED
+
+        if (!gWasFKeyPressed) {
+        char Voltage[8];
+        NUMBER_ToDigits(gBatteryVoltageAverage, Voltage);
+        UI_DisplayStatusDigits(1, Voltage +5, 73);
+        UI_DisplayStatusDigits(2, Voltage +6, 85);
+        gStatusLine[82]=0x60;
+        gStatusLine[83]=0x60;
+        }
+
+
 	ST7565_BlitStatusLine();
 }
 
